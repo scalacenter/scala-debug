@@ -8,7 +8,7 @@ val checkDebugSession = inputKey[Unit]("Check the main class debug session")
 val jdkHome = Paths.get(Properties.jdkHome)
 val jdkSourceZip = jdkHome.resolve("src.zip")
 
-scalaVersion := "2.12.14"
+scalaVersion := "2.13.6"
 javaHome := Some(jdkHome.toFile)
 checkDebugSession := {
   implicit val ec: ExecutionContext = ExecutionContext.global

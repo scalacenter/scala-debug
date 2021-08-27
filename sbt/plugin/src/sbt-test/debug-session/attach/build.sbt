@@ -3,7 +3,7 @@ import ch.epfl.scala.debugadapter.testing.TestDebugClient
 
 val checkDebugSession = taskKey[Unit]("Check the attach debug session")
 
-scalaVersion := "2.12.14"
+scalaVersion := "2.13.6"
 fork := true
 javaOptions += "-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=1045"
 checkDebugSession := {

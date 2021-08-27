@@ -27,7 +27,7 @@ final case class Scala3(version: String) extends ScalaVersion {
 }
 
 object ScalaVersion {
-  val `2.12` = Scala2("2.12.14")
+  val `2.12` = Scala2("2.13.6")
   val `2.13` = Scala2("2.13.6")
   val `3` = Scala3("3.0.0")
 }

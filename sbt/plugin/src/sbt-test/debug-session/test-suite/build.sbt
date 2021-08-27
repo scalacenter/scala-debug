@@ -5,7 +5,7 @@ val checkDebugSession = inputKey[Unit]("Check the test suite debug session")
 
 libraryDependencies += "com.lihaoyi" %% "utest" % "0.7.10" % Test
 testFrameworks += new TestFramework("utest.runner.Framework")
-scalaVersion := "2.12.14"
+scalaVersion := "2.13.6"
 checkDebugSession := {
   implicit val ec: ExecutionContext = ExecutionContext.global
 

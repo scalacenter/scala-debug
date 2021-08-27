@@ -9,7 +9,7 @@ val root = project
   .in(file("."))
   .configs(IntegrationTest)
   .settings(
-    scalaVersion := "2.12.14",
+    scalaVersion := "2.13.6",
     libraryDependencies += "com.lihaoyi" %% "utest" % "0.7.10" % IntegrationTest,
     testFrameworks += new TestFramework("utest.runner.Framework"),
     Defaults.itSettings,

@@ -3,7 +3,7 @@ import ch.epfl.scala.debugadapter.testing.TestDebugClient
 
 val checkDebugSession = inputKey[Unit]("Check the main class debug session")
 
-scalaVersion := "2.12.14"
+scalaVersion := "2.13.6"
 checkDebugSession := {
   implicit val ec: ExecutionContext = ExecutionContext.global
 
