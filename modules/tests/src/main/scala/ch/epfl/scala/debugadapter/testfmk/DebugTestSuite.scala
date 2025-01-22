@@ -160,12 +160,16 @@ trait DebugTest extends CommonUtils {
       }
     }
 
-    def inspect(variable: LocalVariable, assertion: Array[Variable] => Unit): Unit = {
+    def inspect(variable: LocalVariable, assertion: Seq[Variable] => Unit): Unit = {
       val values = for {
-        localScopeRef <- client.scopes(state.topFrame.id).find(_.name == "Local").map(_.variablesReference)
-        variableRef <- client.variables(localScopeRef).find(_.name == variable.name).map(_.variablesReference)
-      } yield client.variables(variableRef)
-      assertion(values.getOrElse(throw new NoSuchElementException(variable.name)))
+        localScopeRef <- client.scopes(state.topFrame.id).find(_.name == "Local").map(_.variablesReference).toSeq
+        variableRefOpt: Option[Int] = variable.names.foldLeft(Option(localScopeRef))((ref, name) =>
+          ref.toSeq.flatMap(x => client.variables(x)).find(_.name == name).map(_.variablesReference)
+        )
+        variableRef <- variableRefOpt.toSeq
+        v <- client.variables(variableRef)
+      } yield v
+      assertion(values)
     }
 
     def stop(): Array[StackFrame] = {
@@ -228,8 +232,8 @@ trait DebugTest extends CommonUtils {
     if (closeSession) {
       continueIfPaused()
       if (!GithubUtils.isCI()) {
-        client.exited(timeout = 4.seconds)
-        client.terminated(timeout = 4.seconds)
+        // client.exited(timeout = 4.seconds)
+        // client.terminated(timeout = 4.seconds)
       }
     }
 
