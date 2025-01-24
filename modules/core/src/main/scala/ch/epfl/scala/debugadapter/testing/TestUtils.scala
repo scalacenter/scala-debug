@@ -1,6 +1,9 @@
 package ch.epfl.scala.debugadapter.testing
 
-import sbt.testing._
+import sbt.testing.*
+
+import java.io.ByteArrayOutputStream
+import java.io.PrintStream
 
 object TestUtils {
   def printSelector(selector: Selector): Option[String] = selector match {
@@ -15,6 +18,18 @@ object TestUtils {
   def printThrowable(opt: OptionalThrowable): Option[String] = {
     if (opt.isEmpty) None
     else Some(stripTestFrameworkSpecificInformation(opt.get().getMessage))
+  }
+
+  def printStackTrace(opt: OptionalThrowable): Option[String] = {
+    if (opt.isEmpty) None
+    else
+      Some {
+        val writer = new StringBuffer
+        val outputStream = new ByteArrayOutputStream()
+        val printStream = new PrintStream(outputStream)
+        opt.get().printStackTrace(printStream)
+        outputStream.toString
+      }
   }
 
   private val specs2Prefix = "java.lang.Exception: "

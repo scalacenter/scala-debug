@@ -35,13 +35,14 @@ object TestSuiteEventHandler {
         case Status.Failure =>
           val failedMsg =
             TestUtils.printThrowable(e.throwable()).getOrElse("")
+          val stackTrace = TestUtils.printStackTrace(e.throwable()).getOrElse("")
           val formatted =
             TestSuiteEventHandler.formatError(
               name,
               failedMsg,
               indentSize = 0
             )
-          SingleTestResult.Failed(name, e.duration, formatted)
+          SingleTestResult.Failed(name, e.duration, formatted, stackTrace)
         case _ =>
           SingleTestResult.Skipped(name)
       }

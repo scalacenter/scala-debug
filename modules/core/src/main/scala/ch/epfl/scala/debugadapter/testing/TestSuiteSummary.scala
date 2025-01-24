@@ -40,10 +40,11 @@ object SingleTestResult {
       val kind: String,
       val testName: String,
       val duration: Long,
-      val error: String
+      val error: String,
+      val stackTrace: String
   ) extends SingleTestSummary
   object Failed {
-    def apply(testName: String, duration: Long, error: String): Failed =
-      new Failed("failed", testName, duration, error)
+    def apply(testName: String, duration: Long, error: String, stackTrace: String): Failed =
+      new Failed("failed", testName, duration, error, stackTrace)
   }
 }
