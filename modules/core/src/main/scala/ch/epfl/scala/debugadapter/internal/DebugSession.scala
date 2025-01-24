@@ -22,6 +22,7 @@ import scala.concurrent.Promise
 import scala.util.Failure
 import scala.util.Success
 import scala.util.Try
+import com.microsoft.java.debug.core.adapter.ISourceLookUpProvider
 
 /**
  * This debug adapter maintains the lifecycle of the debuggee in separation from JDI.
@@ -152,6 +153,10 @@ private[debugadapter] final class DebugSession private (
         val debugConfig =
           if (launchArgs.scalaStepFilters == null) config else config.copy(stepFilters = launchArgs.scalaStepFilters)
         context.configure(tools, debugConfig)
+        context.getProvider(classOf[ISourceLookUpProvider]) match {
+          case provider: SourceLookUpProvider =>
+            debuggee.setSourceLookUpProvider(provider)
+        }
         // launch request is implemented by spinning up a JVM
         // and sending an attach request to the java DapServer
         launchedRequests.add(requestId)

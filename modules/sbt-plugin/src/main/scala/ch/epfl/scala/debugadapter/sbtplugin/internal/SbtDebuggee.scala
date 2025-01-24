@@ -68,7 +68,7 @@ private[debugadapter] final class TestSuitesDebuggee(
     s"${getClass.getSimpleName}(${target.uri}, [${tests.mkString(", ")}])"
 
   override def run(listener: DebuggeeListener): CancelableFuture[Unit] = {
-    val eventHandler = new SbtTestSuiteEventHandler(listener)
+    val eventHandler = new SbtTestSuiteEventHandler(listener, () => sourceLookUpProvider)
 
     @annotation.tailrec
     def receiveLogs(is: ObjectInputStream, os: ObjectOutputStream): Unit = {

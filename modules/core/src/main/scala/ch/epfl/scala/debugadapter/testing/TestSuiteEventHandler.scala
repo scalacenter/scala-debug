@@ -2,6 +2,7 @@ package ch.epfl.scala.debugadapter.testing
 
 import sbt.testing.Status
 import scala.jdk.CollectionConverters.*
+import ch.epfl.scala.debugadapter.internal.SourceLookUpProvider
 
 trait TestSuiteEventHandler {
   def handle(testSuiteEvent: TestSuiteEvent): Unit
@@ -25,7 +26,8 @@ object TestSuiteEventHandler {
    * Provide a summary of test suite execution based on passed TestSuiteEvent.Results parameter.
    */
   def summarizeResults(
-      testSuiteResult: TestSuiteEvent.Results
+      testSuiteResult: TestSuiteEvent.Results,
+      sourceLookUpProviderOpt: Option[SourceLookUpProvider]
   ): TestSuiteSummary = {
     val results = testSuiteResult.events.map { e =>
       val name = TestUtils.printSelector(e.selector).getOrElse("")
@@ -35,13 +37,24 @@ object TestSuiteEventHandler {
         case Status.Failure =>
           val failedMsg =
             TestUtils.printThrowable(e.throwable()).getOrElse("")
+          val location = if (e.throwable().isDefined()) {
+            val throwable = e.throwable().get.getStackTrace().headOption
+            for {
+              stackElement <- throwable
+              sourceLookUpProvider <- sourceLookUpProviderOpt
+              uri <- sourceLookUpProvider.getSourceFileURI(stackElement.getFileName())
+            } yield new SingleTestResult.Location(uri.toString(), stackElement.getLineNumber())
+
+          } else {
+            None
+          }
           val formatted =
             TestSuiteEventHandler.formatError(
               name,
               failedMsg,
               indentSize = 0
             )
-          SingleTestResult.Failed(name, e.duration, formatted)
+          SingleTestResult.Failed(name, e.duration, formatted, location)
         case _ =>
           SingleTestResult.Skipped(name)
       }

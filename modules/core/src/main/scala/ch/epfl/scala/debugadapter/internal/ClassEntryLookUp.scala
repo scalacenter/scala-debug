@@ -37,6 +37,7 @@ private class ClassEntryLookUp(
     sourceUriToSourceFile: Map[SourceFileKey, SourceFile],
     sourceUriToClassFiles: Map[SourceFileKey, Seq[ClassFile]],
     classNameToSourceFile: Map[String, SourceFile],
+    sourceNameToSourceFile: Map[String, Seq[SourceFile]],
     missingSourceFileClassFiles: Seq[ClassFile],
     val orphanClassFiles: Seq[ClassFile],
     logger: Logger
@@ -48,6 +49,10 @@ private class ClassEntryLookUp(
     classNameToSourceFile.keys ++
       orphanClassFiles.map(_.fullyQualifiedName) ++
       missingSourceFileClassFiles.map(_.fullyQualifiedName)
+  }
+
+  def uriFromFilename(filename: String): Option[URI] = {
+    sourceNameToSourceFile.get(filename).flatMap(_.headOption).map(_.uri)
   }
 
   def classesByScalaName: Map[String, Iterable[String]] =
@@ -257,6 +262,7 @@ private object ClassEntryLookUp {
       sourceUriToSourceFile,
       sourceUriToClassFiles.toMap,
       classNameToSourceFile.toMap,
+      sourceNameToSourceFile,
       missingSourceFileClassFiles.toSeq,
       orphanClassFiles.toSeq,
       logger

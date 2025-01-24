@@ -1,8 +1,10 @@
 package ch.epfl.scala.debugadapter
 
-import java.nio.file.Path
-import java.io.File
+import ch.epfl.scala.debugadapter.internal.SourceLookUpProvider
+
 import java.io.Closeable
+import java.io.File
+import java.nio.file.Path
 
 trait Debuggee {
   def name: String
@@ -19,4 +21,10 @@ trait Debuggee {
   def classPath: Seq[Path] = classPathEntries.map(_.absolutePath)
   def classEntries: Seq[ClassEntry] = classPathEntries ++ javaRuntime
   def classPathString: String = classPath.mkString(File.pathSeparator)
+
+  @volatile private[debugadapter] var sourceLookUpProvider: Option[SourceLookUpProvider] = None
+
+  private[debugadapter] def setSourceLookUpProvider(provider: SourceLookUpProvider): Unit = {
+    sourceLookUpProvider = Some(provider)
+  }
 }

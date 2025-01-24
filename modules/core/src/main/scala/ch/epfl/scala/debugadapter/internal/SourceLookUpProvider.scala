@@ -21,6 +21,12 @@ private[debugadapter] final class SourceLookUpProvider(
     getSourceFileByClassname(fqcn).map(_.toString).orNull
   }
 
+  def getSourceFileURI(fileName: String): Option[URI] = {
+    classPathEntries.iterator.map(_.uriFromFilename(fileName)).collectFirst { case Some(value) =>
+      value
+    }
+  }
+
   override def getSourceContents(uri: String): String = {
     val sourceUri = URI.create(uri)
     sourceUriToClassPathEntry

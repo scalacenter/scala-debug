@@ -472,8 +472,8 @@ object DebugAdapterPlugin extends sbt.AutoPlugin {
     val address = new DebugServer.Address()
     jobService.runInBackground(scope, state) { (logger, _) =>
       try {
-        val debuggee = debuggeeF(logger)
         val resolver = resolverF(logger)
+        val debuggee = debuggeeF(logger)
         // if there is a server for this target then close it
         debugServers.get(target).foreach(_.close())
         val server = DebugServer(debuggee, resolver, new LoggerAdapter(logger), address, config)

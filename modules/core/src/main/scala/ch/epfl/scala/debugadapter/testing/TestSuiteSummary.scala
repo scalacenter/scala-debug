@@ -36,14 +36,20 @@ object SingleTestResult {
     def apply(testName: String): Skipped = new Skipped("skipped", testName)
   }
 
+  final class Location(
+      val file: String,
+      val line: Int
+  )
+
   final class Failed private (
       val kind: String,
       val testName: String,
       val duration: Long,
-      val error: String
+      val error: String,
+      val location: Option[Location]
   ) extends SingleTestSummary
   object Failed {
-    def apply(testName: String, duration: Long, error: String): Failed =
-      new Failed("failed", testName, duration, error)
+    def apply(testName: String, duration: Long, error: String, location: Option[Location] = None): Failed =
+      new Failed("failed", testName, duration, error, location)
   }
 }
