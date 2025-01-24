@@ -9,17 +9,22 @@ sealed abstract class Validation[+A] {
   def isValid: Boolean
   def isEmpty: Boolean = !isValid
 
-  def filter(p: A => Boolean, message: A => String): Validation[A]
-  def withFilter(p: A => Boolean): Validation[A] = filter(p, x => s"predicate does not hold on $x")
+  def filter(message: => String)(p: A => Boolean): Validation[A]
+  def filterNot(message: => String)(p: A => Boolean): Validation[A] = filter(message)(!p(_))
+  def withFilter(p: A => Boolean): Validation[A] = filter("predicate does not hold")(p)
 
   def map[B](f: A => B)(implicit logger: Logger): Validation[B]
   def flatMap[B](f: A => Validation[B])(implicit logger: Logger): Validation[B]
 
-  def transform[B](f: Validation[A] => Validation[B]): Validation[B] = f(this)
+  def tap(f: A => Unit): Validation[A]
+  def collect[B](pf: PartialFunction[A, B])(implicit logger: Logger): Validation[B] =
+    if (pf.isDefinedAt(get)) Valid(pf(get)) else Recoverable(s"Value did not match the predicate")
 
   def get: A
   def getOrElse[B >: A](f: => B): B
   def orElse[B >: A](f: => Validation[B], resetError: Boolean = false): Validation[B]
+  def orElseIf[B >: A](p: => Boolean)(f: => Validation[B], resetError: Boolean = false): Validation[B] =
+    if (isValid) this else if (p) orElse(f, resetError) else this
 
   def toOption: Option[A]
 }
@@ -28,12 +33,16 @@ final case class Valid[+A](value: A) extends Validation[A]() {
   override val isValid: Boolean = true
   override def map[B](f: A => B)(implicit logger: Logger): Validation[B] = Validation(f(value))
   override def flatMap[B](f: A => Validation[B])(implicit logger: Logger): Validation[B] = f(value)
+  def tap(f: A => Unit): Validation[A] = {
+    f(get)
+    this
+  }
   override def get = value
   override def getOrElse[B >: A](f: => B): B = value
   override def orElse[B >: A](f: => Validation[B], resetError: Boolean): Validation[B] = this
 
-  override def filter(p: A => Boolean, message: A => String): Validation[A] =
-    if (p(value)) this else Recoverable(message(value))
+  override def filter(message: => String)(p: A => Boolean): Validation[A] =
+    if (p(value)) this else Recoverable(message)
 
   override def toOption: Option[A] = Some(value)
 }
@@ -43,10 +52,11 @@ sealed trait Invalid extends Validation[Nothing] {
   override val isValid: Boolean = false
   override def map[B](f: Nothing => B)(implicit logger: Logger): Validation[B] = this
   override def flatMap[B](f: Nothing => Validation[B])(implicit logger: Logger): Validation[B] = this
+  def tap(f: Nothing => Unit): Validation[Nothing] = this
   override def get = throw exception
   override def getOrElse[B >: Nothing](f: => B): B = f
 
-  override def filter(p: Nothing => Boolean, message: Nothing => String): Validation[Nothing] = this
+  override def filter(message: => String)(p: Nothing => Boolean): Validation[Nothing] = this
 
   override def toOption: Option[Nothing] = None
 }
@@ -61,7 +71,6 @@ final case class Recoverable(exception: Exception) extends Invalid {
 
 final case class Fatal(exception: Throwable) extends Invalid {
   override def orElse[B >: Nothing](f: => Validation[B], resetError: Boolean): Validation[B] = this
-  override def transform[B](f: Validation[Nothing] => Validation[B]): Validation[B] = this
 }
 
 object Validation {

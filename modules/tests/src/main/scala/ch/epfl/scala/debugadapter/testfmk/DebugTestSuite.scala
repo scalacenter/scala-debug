@@ -48,14 +48,14 @@ trait DebugTest extends CommonUtils {
   def getDebugServer(
       debuggee: Debuggee,
       config: DebugConfig = defaultConfig,
-      logger: Logger = NoopLogger
+      logger: Logger = PrintLogger
   ): DebugServer =
     DebugServer(debuggee, TestingResolver, logger, config = config)
 
   def runDebugServer(
       debuggee: Debuggee,
       gracePeriod: Duration = 2.seconds,
-      logger: Logger = NoopLogger
+      logger: Logger = PrintLogger
   ): DebugServer.Handler =
     DebugServer.run(debuggee, TestingResolver, logger, gracePeriod = gracePeriod)
 

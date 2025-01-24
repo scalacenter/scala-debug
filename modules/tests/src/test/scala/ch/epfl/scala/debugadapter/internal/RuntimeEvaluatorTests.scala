@@ -361,9 +361,9 @@ abstract class ScalaRuntimeEvaluatorTests(val scalaVersion: ScalaVersion) extend
       TestingDebuggee.mainClass(RuntimeEvaluatorEnvironments.byNameFunction0, "example.Main", scalaVersion)
     check(
       Breakpoint(10),
-      Evaluation.failed("x", "x could be a by-name argument"),
+      Evaluation.failed("x", "could be a by-name argument"),
       Breakpoint(13),
-      Evaluation.failed("x", "x could be a by-name argument")
+      Evaluation.failed("x", "could be a by-name argument")
     )
   }
 
@@ -1452,5 +1452,38 @@ abstract class ScalaRuntimeEvaluatorTests(val scalaVersion: ScalaVersion) extend
     implicit val debuggee: TestingDebuggee = TestingDebuggee.mainClass(source, "example.Main", scalaVersion)
     // a pure expression does nothing in statement position
     check(Breakpoint(8), Evaluation.success("m", 1))
+  }
+
+  test("evaluate methods of Predef") {
+    val source =
+      """|package example
+         |
+         |object Main {
+         |  def main(args: Array[String]): Unit = {
+         |    println("foo")
+         |  }
+         |}
+         |""".stripMargin
+    implicit val debuggee: TestingDebuggee = TestingDebuggee.mainClass(source, "example.Main", scalaVersion)
+    check(Breakpoint(5), Evaluation.success("""println("foo")""", ()), Evaluation.success("require(true)", ()))
+  }
+
+  test("evaluate methods on StringOps".only) {
+    val source =
+      """|package example
+         |
+         |object Main {
+         |  def main(args: Array[String]): Unit = {
+         |    println("foo")
+         |  }
+         |}
+         |""".stripMargin
+    implicit val debuggee: TestingDebuggee = TestingDebuggee.mainClass(source, "example.Main", scalaVersion)
+    check(
+      Breakpoint(5),
+      Evaluation.success(""""foo".size""", 3),
+      Evaluation.success(""""foo".sizeCompare(1)""", 1),
+      Evaluation.success(""""foo".sizeCompare("b".size)""", 1)
+    )
   }
 }

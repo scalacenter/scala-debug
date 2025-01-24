@@ -15,14 +15,17 @@ object RuntimeEvaluationTree {
     def args: Seq[RuntimeEvaluationTree]
   }
 
-  sealed trait Assignable extends RuntimeEvaluationTree
+  sealed trait Assignable extends RuntimeEvaluationTree {
+    def isMutable: Boolean
+  }
 
   sealed trait Field extends Assignable {
     def field: jdi.Field
-    def isMutable: Boolean = !field.isFinal
+    override def isMutable: Boolean = !field.isFinal
   }
 
   case class LocalVar(name: String, `type`: jdi.Type) extends Assignable {
+    override val isMutable: Boolean = true
     override def prettyPrint(depth: Int): String = {
       val indent = "  " * (depth + 1)
       s"""|LocalVar(
@@ -125,7 +128,7 @@ object RuntimeEvaluationTree {
   }
 
   case class NewInstance(init: CallStaticMethod) extends RuntimeEvaluationTree {
-    override lazy val `type`: jdi.ReferenceType = init.method.declaringType() // .asInstanceOf[jdi.ClassType]
+    override lazy val `type`: jdi.ReferenceType = init.method.declaringType()
     override def prettyPrint(depth: Int): String = {
       val indent = "  " * (depth + 1)
       s"""|NewInstance(
