@@ -32,7 +32,7 @@ object Dependencies {
     }
 
   val scalaParallelCollection = "org.scala-lang.modules" %% "scala-parallel-collections" % "1.2.0"
-  val scalaCollectionCompat = "org.scala-lang.modules" %% "scala-collection-compat" % "2.12.0"
+  val scalaCollectionCompat = "org.scala-lang.modules" %% "scala-collection-compat" % "2.13.0"
   val sbtTestAgent = "org.scala-sbt" % "test-agent" % "1.10.7"
   val scalaMeta = ("org.scalameta" %% "parsers" % "4.12.7").cross(CrossVersion.for3Use2_13)
 
