@@ -238,12 +238,17 @@ object Evaluation {
   }
 }
 
-final case class LocalVariable(name: String) extends DebugStep[Array[Variable]]
+final case class LocalVariable(names: Seq[String]) extends DebugStep[Seq[Variable]]
 object LocalVariable {
-  def inspect(variable: String)(p: Array[Variable] => Boolean)(implicit
+  def inspect(variables: String*)(p: Seq[Variable] => Boolean)(implicit
       location: Location
-  ): SingleStepAssert[Array[Variable]] =
-    new SingleStepAssert(new LocalVariable(variable), values => assert(p(values)))
+  ): SingleStepAssert[Seq[Variable]] =
+    new SingleStepAssert(new LocalVariable(variables), values => assert(p(values)))
+
+  def apply(variables: String*)(expected: Seq[String])(implicit
+      location: Location
+  ): SingleStepAssert[Seq[Variable]] =
+    new SingleStepAssert(new LocalVariable(variables), values => assertEquals(values.map(_.name).toSeq, expected))
 }
 
 object Outputed extends DebugStep[String] {
